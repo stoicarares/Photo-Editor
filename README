@@ -1,0 +1,88 @@
+Stoica Rares-Tiberiu 311CA
+
+Am folosit 2 structuri, una pentru a retine parametrii imaginii(image_t) si un pentru
+	memorarea coordonatelor selectate(selected_t);
+
+Comanda "LOAD":
+	-Am deschis fisierul din care urmeaza sa citesc in format binar;
+	-Am alocat memorie matricii si am citit pixelii, dupa tipul de 
+		imagine:
+			-Pentru grayscale(P5 si P2), am citit cu fprintf elementele,
+				fiind vorba de numere, o imagine retinuta format ascii;
+			-Pentru color(P3 si P6), am citit cu fread, fiind vorba de
+				o imagine retinuta format in binar;
+	-Indiferent de tipul imaginii, am retinut pixelii in matrice de tipul
+		unsigned char, valoarea maxima fiind 255;
+
+Comanda "SELECT":
+	-Se foloseste de 3 functii:
+		- "memorize_coordinates" care va pune in structura ce retine coordonatele
+			selectate;
+		- "check_parameters" care verifica daca coordonatele depasesc marginile
+			imaginii, daca sunt valide;
+		- "selection" unde iau parametru cu parametru cu strtok si verific daca
+			este prezent parametru ALL sau daca este introdusa o comanda 
+			valida(nu are caractere, nu sunt numere negative). Daca totul este
+			ok, folosesc atoi sa transform numerele din string in int sa le pot compara;
+
+Comanda "CROP":
+	-Am alocat o noua matrice in care am copiat elementele incadrate intre coordonatele
+		din structura de selectie, in fucntie de tipul imaginii. Pentru imaginea color,
+		am alocat de 3 ori mai mult;
+	-Am dat free la matricea imagine, apoi am setat noile dimensiuni ale imaginii 
+		decupate, urmand sa returnez matricea nou alocata, ce va fi retinuta in main
+		de matricea initiala;
+
+Comanda "ROTATE":
+	-Am facut cate o funtie de rotire pentru fiecare dintre urmatoarele:
+		-90(-90) de grade stanga pentru o portiune selectata partial la imaginile grayscale;
+		-90(-90) de grade stanga pentru o portiune selectata partial la imaginile color;
+		-90 de grade dreapta pentru o portiune selectata partial la imaginile grayscale;
+		-90 de grade dreapta pentru o portiune selectata partial la imaginile color;
+		-180 de grade pentur o portiune selectata partial/integral pentru imaginile grayscale;
+		-180 de grade pentur o portiune selectata partial/integral pentru imaginile color;
+		-90(-90) de grade stanga pentru intreaga imagine grayscale;
+		-90(-90) de grade stanga pentru intreaga imagine color;
+		-90 de grade dreapta pentru intreaga imagine grayscale;
+		-90 de grade dreapta pentru intreaga imagine color;
+	-Pentru toate am gasit formule pentru transpusa si de inversarea liniilor/coloanelor;
+		cate 1/cate 3;
+	-Am gasit legaturi intre indici si am facut cate o functie pentru:
+		-transpusa grayscale;
+		-transpusa color;
+		-inversarea de linii si coloane pentru fiecare din tipurile de imagini(grayscale,color);
+	-Pentru modularizare, am facut functii pentru rotire 90 la dreapta, rotire 90 la stanga si
+		pentru rotire 180 care aleg pe care din cele anterioare sa le foloseasca, in functie de
+		tipul si coordonatele de selectie ale imaginii;
+	-In functia "rotate" am verificat valoarea unghiului si am aplicat functiile corespunzatoare,
+		luand in considerare ca 90 = -270, 270 = -90, 180 = -180, iar la 0 si 360 nu se modifica
+		nimic;
+
+Comanda "SEPIA":
+	-Parcurg matricea intre coordonatele selectate cu un pas de +3 la j, pentru ca
+		retin cate elemente, ce reprezinta vechile valori ale pixelilor si le convertesc in
+		int-uri sa le pot pe cele noi;
+	-Calculez valorile noilor pixeli, le rotunjesc, le convertesc in unsigned char si le pun 
+		in matrice, comparand cu valoarea maxima posibila a acestora, retinuta de structura imagine;
+
+Comanda "GRAYSCALE":
+	-Parcurg matricea intre coordonatele selectate cu un pas de +3 la j, pentru ca
+		retin cate elemente, ce reprezinta vechile valori ale pixelilor si le convertesc in
+		int-uri sa le pot pe cele noi;
+	-De data aceasta cele 3 valori sunt egale si se pun in matrice fara sa se mai compare cu
+		o valoare maxima;
+
+Comanda "SAVE":
+	-Dupa ce citesc "SAVE" in main, restul randului il transmit in functie si il despart cu strtok;
+	-Primul cuvant va fi numele fisierului in care se salveaza imaginea;
+	-Verific apoi daca exista argumentul ascii;
+	-Daca nu exista argumentul ascii, salvez imaginea(afisez matricea) in fisier in mod binar,
+		imaginile color	se salveaza cu tipul P6, iar cele grayscale cu tipul P5;
+	-Daca exista argumentul ascii, salvez imaginea(afisez matricea) in fisier in format ascii,
+		imaginile color	se salveaza cu tipul P3, iar cele grayscale cu tipul P2;
+
+Comanda "EXIT":
+	-Eliberez memoria alocata pentru matricea-imagine daca a avut loc o incarcare de imagine;
+
+In main, am facut meniul care citeste comenzi pana la intalnirea cuvantului EXIT. Pentru comenzile "SELECT"
+	si "SAVE", citesc ce urmeaza dupa cu fgets si trimit ca parametru in functie, urmand sa despart cu strtok.
